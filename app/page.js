@@ -1,6 +1,5 @@
 // app/page.js
-'use client'; // Ensure this directive is at the top
-
+'use client';
 import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
 import { firestore } from "@/firebase";
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc } from "firebase/firestore";
@@ -27,77 +26,17 @@ const modalStyle = {
 const buttonStyle = {
   marginTop: '20px',
   padding: '10px 20px',
+  backgroundColor: '#4CAF50',
+  color: '#fff',
   fontSize: '16px',
   fontWeight: 'bold',
   borderRadius: '8px',
   textTransform: 'none',
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   transition: 'background-color 0.3s, box-shadow 0.3s',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-};
-
-const addButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#4A90E2', // Soft Blue
-  color: '#fff',
   '&:hover': {
-    backgroundColor: '#357ABD', // Darker Blue
+    backgroundColor: '#45a049',
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
-  }
-};
-
-const removeButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#E94E77', // Soft Red
-  color: '#fff',
-  '&:hover': {
-    backgroundColor: '#C42D50', // Darker Red
-    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.3)',
-  }
-};
-
-const iconStyle = {
-  fontSize: '24px', // Adjust icon size as needed
-};
-
-const pantryBoxStyle = {
-  borderRadius: '16px',
-  overflow: 'hidden',
-  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
-  marginTop: '20px',
-  background: 'linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%)', // Subtle gradient
-};
-
-const headerBoxStyle = {
-  width: "800px",
-  height: "100px",
-  bgcolor: '#B3E5FC', // Light blue background
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  borderBottom: '2px solid #81D4FA', // Slightly darker blue border
-  borderTopLeftRadius: '16px',
-  borderTopRightRadius: '16px',
-};
-
-const itemBoxStyle = {
-  width: "100%",
-  minHeight: "150px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)', // Subtle gradient
-  paddingX: 5,
-  borderBottom: '1px solid #E0E0E0', // Light gray border
-  borderRadius: '8px',
-  margin: '10px 0',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  transition: 'box-shadow 0.3s, background-color 0.3s',
-  '&:hover': {
-    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-    backgroundColor: '#f9f9f9', // Slight color change on hover
   }
 };
 
@@ -107,6 +46,7 @@ export default function PantryPage() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [itemName, setItemName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const updatePantry = async () => {
     const snapshot = query(collection(firestore, 'pantry'));
@@ -148,6 +88,10 @@ export default function PantryPage() {
     await updatePantry();
   };
 
+  const filteredPantry = pantry.filter(({ name }) =>
+    name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Box
       width="100vw"
@@ -157,17 +101,18 @@ export default function PantryPage() {
       alignItems="center"
       justifyContent="center"
       style={{
-        backgroundImage: `url('/images/groceryBackgroundImage3.jpeg')`, // Path to your background image
+        backgroundImage: `url('/images/groceryBackgroundImage3.jpeg')`, 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         padding: '20px',
-        color: '#fff', // Ensures text is readable on top of the image
+        color: '#fff',
       }}
     >
       <Head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
       </Head>
+
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <Box sx={modalStyle}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
@@ -189,7 +134,7 @@ export default function PantryPage() {
                 setItemName('');
                 handleClose();
               }}
-              style={addButtonStyle}
+              style={buttonStyle}
             >
               Add
             </Button>
@@ -197,53 +142,93 @@ export default function PantryPage() {
         </Box>
       </Modal>
 
-      <Button
-        variant="contained"
-        onClick={handleOpen}
-        style={addButtonStyle}
-      >
-        Add New Item
-      </Button>
+      <Stack spacing={3} alignItems="center" width="80%">
+        <TextField
+          id="search-bar"
+          label="Search Pantry"
+          variant="outlined"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '8px',
+            padding: '10px',
+            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+            color: '#333',
+            '& .MuiInputLabel-root': { color: '#555' },
+          }}
+        />
 
-      <Box sx={pantryBoxStyle}>
-        <Box sx={headerBoxStyle}>
-          <Typography variant={'h4'} color={'#333'} textAlign={'center'}>
-            Pantry Items
-          </Typography>
+        <Button
+          variant="contained"
+          onClick={handleOpen}
+          style={buttonStyle}
+        >
+          Add New Item
+        </Button>
+
+        <Box border={'1px solid #333'} borderRadius={2} overflow="hidden">
+          <Box
+            width="800px"
+            height="100px"
+            bgcolor={'rgba(173, 216, 230, 0.8)'}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Typography variant={'h2'} color={'#333'} textAlign={'center'}>
+              Pantry Items
+            </Typography>
+          </Box>
+
+          <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
+            {filteredPantry.map(({ name, count }) => (
+              <Box
+                key={name}
+                width="100%"
+                minHeight="150px"
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                bgcolor={'rgba(240, 240, 240, 0.8)'}
+                paddingX={5}
+                borderBottom="1px solid #ddd"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(240, 240, 240, 1)', // Fully opaque on hover
+                    transform: 'scale(1.02)', // Slight scale on hover
+                    transition: 'all 0.3s ease-in-out',
+                  },
+                }}
+              >
+                <Typography variant={'h5'} color={'#333'}>
+                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                </Typography>
+
+                <Typography variant={'h5'} color={'#333'}>
+                  Quantity: {count}
+                </Typography>
+
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="contained"
+                    onClick={() => addItem(name)}
+                    startIcon={<AddIcon />}
+                    style={{ ...buttonStyle, backgroundColor: '#4CAF50' }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => removeItem(name)}
+                    startIcon={<RemoveIcon />}
+                    style={{ ...buttonStyle, backgroundColor: '#f44336' }}
+                  />
+                </Stack>
+              </Box>
+            ))}
+          </Stack>
         </Box>
-
-        <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
-          {pantry.map(({ name, count }) => (
-            <Box
-              key={name}
-              sx={itemBoxStyle}
-            >
-              <Typography variant='h6' color={'#333'}>
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Typography>
-
-              <Typography variant='h6' color={'#333'}>
-                Quantity: {count}
-              </Typography>
-
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  onClick={() => addItem(name)}
-                  startIcon={<AddIcon style={iconStyle} />}
-                  style={addButtonStyle}
-                />
-                <Button
-                  variant="contained"
-                  onClick={() => removeItem(name)}
-                  startIcon={<RemoveIcon style={iconStyle} />}
-                  style={removeButtonStyle}
-                />
-              </Stack>
-            </Box>
-          ))}
-        </Stack>
-      </Box>
+      </Stack>
     </Box>
   );
 }
